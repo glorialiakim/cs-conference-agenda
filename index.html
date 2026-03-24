@@ -428,37 +428,40 @@ function setLang(l) {
 document.getElementById('btnKo').onclick = function(){ setLang('ko'); };
 document.getElementById('btnEn').onclick = function(){ setLang('en'); };
 
+function setText(id, val){ var el=document.getElementById(id); if(el) el.textContent=val; }
+function setHTML(id, val){ var el=document.getElementById(id); if(el) el.innerHTML=val; }
+
 function applyUILang() {
-  document.getElementById('mainTitle').textContent       = tx('title');
-  document.getElementById('subtitleEl').innerHTML        = tx('subtitle');
-  document.getElementById('noticeEl').innerHTML          = tx('notice');
-  document.getElementById('corpLabel').textContent       = tx('corpLabel');
-  document.getElementById('corpHint').textContent        = tx('corpHint');
-  document.getElementById('th-corp').textContent         = tx('thCorp');
-  document.getElementById('th-cat').textContent          = tx('thCat');
-  document.getElementById('th-title').textContent        = tx('thTitle');
-  document.getElementById('th-content').innerHTML        = tx('thContent')+'<br><span style="font-weight:normal;font-size:11px">'+tx('thContentSub')+'</span>';
-  document.getElementById('th-dept').textContent         = tx('thDept');
-  document.getElementById('th-urg').textContent          = tx('thUrg');
-  document.getElementById('btnAdd').textContent          = tx('btnAdd');
-  document.getElementById('btnSave').textContent         = tx('btnSave');
-  document.getElementById('btnCopy').textContent         = tx('btnCopy');
-  document.getElementById('allListTitle').textContent    = tx('allListTitle');
-  document.getElementById('refreshLabel').textContent    = tx('refreshLabel');
-  document.getElementById('tabDashLabel').textContent    = dashOpen ? tx('tabDashClose') : tx('tabDashOpen');
-  document.getElementById('statTotalLabel').textContent  = tx('statTotal');
-  document.getElementById('statCorpsLabel').textContent  = tx('statCorps');
-  document.getElementById('statHighLabel').textContent   = tx('statHigh');
-  document.getElementById('statInterestLabel').textContent = tx('statInterest');
-  document.getElementById('corpBreakdownTitle').textContent = tx('corpBreakdown');
-  document.getElementById('topAgendaTitle').textContent  = tx('topAgenda');
-  document.getElementById('fCorpAll').textContent        = tx('fCorpAll');
-  document.getElementById('fUrgAll').textContent         = tx('fUrgAll');
-  document.getElementById('fUrgH').textContent           = tx('fUrgH');
-  document.getElementById('fUrgM').textContent           = tx('fUrgM');
-  document.getElementById('fUrgL').textContent           = tx('fUrgL');
-  document.getElementById('fIntAll').textContent         = tx('fIntAll');
-  document.getElementById('fIntMine').textContent        = tx('fIntMine');
+  setText('mainTitle',       tx('title'));
+  setHTML('subtitleEl',      tx('subtitle'));
+  setHTML('noticeEl',        tx('notice'));
+  setText('corpLabel',       tx('corpLabel'));
+  setText('corpHint',        tx('corpHint'));
+  setText('th-corp',         tx('thCorp'));
+  setText('th-cat',          tx('thCat'));
+  setText('th-title',        tx('thTitle'));
+  setHTML('th-content',      tx('thContent')+'<br><span style="font-weight:normal;font-size:11px">'+tx('thContentSub')+'</span>');
+  setText('th-dept',         tx('thDept'));
+  setText('th-urg',          tx('thUrg'));
+  setText('btnAdd',          tx('btnAdd'));
+  setText('btnSave',         tx('btnSave'));
+  setText('btnCopy',         tx('btnCopy'));
+  setText('allListTitle',    tx('allListTitle'));
+  setText('refreshLabel',    tx('refreshLabel'));
+  setText('tabDashLabel',    dashOpen ? tx('tabDashClose') : tx('tabDashOpen'));
+  setText('statTotalLabel',  tx('statTotal'));
+  setText('statCorpsLabel',  tx('statCorps'));
+  setText('statHighLabel',   tx('statHigh'));
+  setText('statInterestLabel', tx('statInterest'));
+  setText('corpBreakdownTitle', tx('corpBreakdown'));
+  setText('topAgendaTitle',  tx('topAgenda'));
+  setText('fCorpAll',        tx('fCorpAll'));
+  setText('fUrgAll',         tx('fUrgAll'));
+  setText('fUrgH',           tx('fUrgH'));
+  setText('fUrgM',           tx('fUrgM'));
+  setText('fUrgL',           tx('fUrgL'));
+  setText('fIntAll',         tx('fIntAll'));
+  setText('fIntMine',        tx('fIntMine'));
   buildCorpSelect();
   document.querySelectorAll('#tbody tr[id]').forEach(function(tr){
     var c=tr.querySelectorAll('td'), n=parseInt(tr.id.replace('row-',''));
