@@ -662,11 +662,12 @@ function renderAllList(){
 
 function cardHTML(r, myc, maxInt){
   var corps=interestData[r.key]||[], iAm=myc&&corps.indexOf(myc)!==-1, disabled=!myc;
-  var isMine=myc&&(r._corp===myc||r.corp===myc);
+  var rCorp = (r._corp||r.corp||'').trim();
+  var isMine = myc && rCorp === myc.trim();
   var urgCls=(r.urg==='높음'||r.urg==='High')?'urg-high':(r.urg==='보통'||r.urg==='Medium')?'urg-mid':'urg-low';
   var deptList=r.depts&&r.depts.length?r.depts:(r.dept?[r.dept]:[]);
   var barPct=maxInt>0?Math.round(corps.length/maxInt*100):0;
-  var delBtn=isMine?'<button onclick="deleteAgenda(\''+r.key+'\',\''+(r._corp||r.corp)+'\')" style="background:none;border:1px solid #e74c3c;border-radius:4px;color:#e74c3c;font-size:11px;padding:3px 8px;cursor:pointer;">'+tx('deleteBtn')+'</button>':'';
+  var delBtn=isMine?'<button onclick="deleteAgenda(\''+r.key+'\',\''+rCorp+'\')" style="background:none;border:1px solid #e74c3c;border-radius:4px;color:#e74c3c;font-size:11px;padding:3px 8px;cursor:pointer;">'+tx('deleteBtn')+'</button>':'';
   var intBtn='<button class="interest-btn'+(iAm?' active':'')+'" '+(disabled?'disabled':'')+' onclick="toggleInterest(\''+r.key+'\')">'+( iAm?tx('intActive'):tx('intBtn'))+'</button>';
   return '<div class="agenda-card">'
     +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">'
