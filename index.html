@@ -690,7 +690,7 @@ async function deleteAgenda(key, corp){
   try {
     var updated=(allCorpData[corp]||[]).filter(function(r){ return r.key!==key; });
     await window.FB.save(corp, updated);
-    allCorpData[corp]=updated;
+    allCorpData = await window.FB.loadAll();
     document.getElementById('tbody').innerHTML=''; rowCount=0;
     if (updated.length) updated.forEach(function(r){ document.getElementById('tbody').appendChild(makeRow(r)); });
     else document.getElementById('tbody').appendChild(makeRow(null));
