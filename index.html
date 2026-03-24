@@ -520,15 +520,20 @@ function agendaCardHTML(r,mc,maxInt,topRank){
   const corps=interestData[r.key]||[];
   const iAm=mc&&corps.includes(mc);
   const disabled=!mc;
+  const isMine=mc&&(r._corp===mc||r.corp===mc);
   const urgCls=(r.urg==='높음'||r.urg==='High')?'urg-high':(r.urg==='보통'||r.urg==='Medium')?'urg-mid':'urg-low';
   const deptList=r.depts&&r.depts.length?r.depts:(r.dept?[r.dept]:[]);
   const barPct=maxInt>0?Math.round(corps.length/maxInt*100):0;
   const btnText=disabled?t('interestDisabled'):iAm?t('interestActive'):t('interestBtn');
   const disabledTitle=disabled?(lang==='ko'?'법인을 먼저 선택해주세요':'Please select your entity first'):'';
+  const deleteBtn=isMine?`<button onclick="deleteAgenda('${r.key}','${r._corp||r.corp}')" style="margin-left:auto;background:none;border:1px solid #e74c3c;border-radius:4px;color:#e74c3c;font-size:11px;padding:3px 8px;cursor:pointer;" title="${lang==='ko'?'삭제':'Delete'}">✕</button>`:'';
   return `<div class="agenda-card">
-    <div><span class="badge">${r._corp||r.corp}</span><span class="badge">${r.cat}</span>
-      <span class="badge ${urgCls}">${t('thUrg')}: ${r.urg}</span>
-      ${deptList.map(d=>`<span class="badge">${d}</span>`).join('')}
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+      <div><span class="badge">${r._corp||r.corp}</span><span class="badge">${r.cat}</span>
+        <span class="badge ${urgCls}">${t('thUrg')}: ${r.urg}</span>
+        ${deptList.map(d=>`<span class="badge">${d}</span>`).join('')}
+      </div>
+      ${deleteBtn}
     </div>
     <div class="card-title">${r.title||'(제목 없음)'}</div>
     <div class="card-body">${(r.content||'').replace(/\n/g,'<br>')}</div>
@@ -566,7 +571,26 @@ function renderDashboard(){
   }).join('')||`<div class="empty">${t('noAllData')}</div>`;
 }
 
-async function toggleInterest(rowKey){
+async function deleteAgenda(rowKey, corp){
+  const mc=myCorp();
+  if(!mc||mc!==corp){alert(t('selectCorpAlert'));return;}
+  const confirmMsg=lang==='ko'?'이 아젠다를 삭제할까요?':'Delete this agenda?';
+  if(!confirm(confirmMsg))return;
+  showOverlay(t('processing'));
+  try{
+    const rows=allCorpData[corp]||[];
+    const updated=rows.filter(r=>r.key!==rowKey);
+    await window.fbSave(corp,updated);
+    allCorpData[corp]=updated;
+    // 입력 테이블도 동기화
+    if(corp===mc){
+      document.getElementById('tbody').innerHTML='';rowCount=0;
+      if(updated.length){updated.forEach(r=>document.getElementById('tbody').appendChild(makeRow(r)));}
+      else document.getElementById('tbody').appendChild(makeRow(null));
+    }
+    renderAllList();if(dashOpen)renderDashboard();
+  }catch(e){alert('Error: '+e.message);}finally{hideOverlay();}
+}
   const mc=myCorp();if(!mc){alert(t('selectCorpAlert'));return;}
   if(!interestData[rowKey])interestData[rowKey]=[];
   const idx=interestData[rowKey].indexOf(mc);
