@@ -609,9 +609,11 @@ function copyTable(){
   alert('✅ '+t('copied'));
 }
 
+// 법인 선택 목록 즉시 초기화 (Firebase 대기 불필요)
+document.getElementById('myCorpSelect').innerHTML=`<option value="">-- 선택 --</option>`+CORPS.map(c=>`<option>${c}</option>`).join('');
+
 async function init(){
   interestData=await window.fbLoadInterests();
-  document.getElementById('myCorpSelect').innerHTML=`<option value="">${t('selectCorp')}</option>`+CORPS.map(c=>`<option>${c}</option>`).join('');
   openGuide(false);
   await loadAllAndRender();
 }
