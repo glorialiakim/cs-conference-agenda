@@ -588,7 +588,7 @@ document.getElementById('btnCopy').onclick = function(){ copyTable(); };
 function onCorpChange(){
   var corp=mc();
   warn(false);
-  if (!corp){ document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="loading">'+tx('needCorpFirst')+'</td></tr>'; rowCount=0; return; }
+  if (!corp){ document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="loading">'+tx('needCorpFirst')+'</td></tr>'; rowCount=0; renderAllList(); return; }
   loadCorpData(corp);
 }
 document.getElementById('myCorpSelect').onchange = onCorpChange;
@@ -613,6 +613,7 @@ async function loadCorpData(corp){
     document.getElementById('tbody').innerHTML=''; rowCount=0;
     if (rows.length){ rows.forEach(function(r){ document.getElementById('tbody').appendChild(makeRow(r)); }); setStatus('✅ '+rows.length+tx('loaded'),'ok'); }
     else document.getElementById('tbody').appendChild(makeRow(null));
+    renderAllList();
   } catch(e){ document.getElementById('tbody').innerHTML=''; rowCount=0; document.getElementById('tbody').appendChild(makeRow(null)); }
   finally { hideOv(); }
 }
@@ -629,9 +630,9 @@ async function loadAllAndRender(){
 }
 
 document.getElementById('refreshBtn').onclick = loadAllAndRender;
-document.getElementById('filterCorp').onchange     = renderAllList;
-document.getElementById('filterUrg').onchange      = renderAllList;
-document.getElementById('filterInterest').onchange = renderAllList;
+document.getElementById('filterCorp').onchange     = function(){ renderAllList(); };
+document.getElementById('filterUrg').onchange      = function(){ renderAllList(); };
+document.getElementById('filterInterest').onchange = function(){ renderAllList(); };
 
 /* ===== 전체 아젠다 리스트 ===== */
 var urgMap = {높음:'high',보통:'mid',낮음:'low',High:'high',Medium:'mid',Low:'low'};
@@ -685,17 +686,29 @@ function cardHTML(r, myc, maxInt){
 }
 
 async function deleteAgenda(key, corp){
-  if (!mc()||mc()!==corp){ alert(tx('needCorp')); return; }
+  var myc = mc();
+  if (!myc){ alert(tx('needCorp')); return; }
+  if (myc.trim() !== corp.trim()){ alert(tx('needCorp')); return; }
   if (!confirm(tx('deleteConfirm'))) return;
   showOv(tx('processing'));
   try {
-    var updated=(allCorpData[corp]||[]).filter(function(r){ return r.key!==key; });
+    var updated = (allCorpData[corp]||[]).filter(function(r){ return r.key !== key; });
     await window.FB.save(corp, updated);
-    allCorpData = await window.FB.loadAll();
+    // 로컬 데이터 직접 업데이트
+    allCorpData[corp] = updated;
+    // 입력 테이블 갱신
     document.getElementById('tbody').innerHTML=''; rowCount=0;
     if (updated.length) updated.forEach(function(r){ document.getElementById('tbody').appendChild(makeRow(r)); });
     else document.getElementById('tbody').appendChild(makeRow(null));
-    renderAllList(); if(dashOpen) renderDashboard();
+    // 필터 드롭다운 갱신
+    var fCorp = document.getElementById('filterCorp');
+    var prevVal = fCorp.value;
+    fCorp.innerHTML = '<option value="all">'+tx('fCorpAll')+'</option>'+
+      CORPS.filter(function(c){ return allCorpData[c]&&allCorpData[c].length; })
+           .map(function(c){ return '<option value="'+c+'"'+(c===prevVal?' selected':'')+'>'+c+'</option>'; }).join('');
+    // 리스트 & 대시보드 갱신
+    renderAllList();
+    if (dashOpen) renderDashboard();
   } catch(e){ alert('Error: '+e.message); } finally { hideOv(); }
 }
 
