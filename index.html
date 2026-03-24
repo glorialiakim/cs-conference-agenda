@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 CS Conference Agenda</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Malgun Gothic',Arial,sans-serif;font-size:13px;margin:0;padding:20px;background:#f9f9f9;}
+  .top-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  h2{color:#1a3a5c;font-size:15px;margin:0;}
+  .lang-toggle{display:flex;border:1px solid #1a3a5c;border-radius:4px;overflow:hidden;flex-shrink:0;}
+  .lang-btn{padding:5px 14px;border:none;cursor:pointer;font-size:12px;font-family:inherit;background:#fff;color:#1a3a5c;transition:all .15s;}
+  .lang-btn.active{background:#1a3a5c;color:#fff;}
+  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.78);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-size:14px;color:#1a3a5c;font-weight:bold;}
+  .overlay.show{display:flex;}
+  .spinner{width:28px;height:28px;border:3px solid #cce;border-top-color:#1a3a5c;border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .subtitle{color:#666;font-size:12px;margin-bottom:12px;}
+  .notice{background:#fffbe6;border-left:3px solid #f0c040;padding:8px 12px;font-size:12px;margin-bottom:14px;color:#7a5c00;}
+  .corp-banner{background:#1a3a5c;color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .corp-banner label{font-size:13px;font-weight:bold;white-space:nowrap;}
+  .corp-banner select{height:32px;width:150px;font-size:13px;border-radius:4px;border:none;padding:0 6px;}
+  .corp-banner .hint{font-size:11px;color:#aac4e0;}
+  .corp-banner .sync-info{font-size:11px;color:#7fcf9f;margin-left:auto;}
+  table{border-collapse:collapse;width:100%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  th{background:#1a3a5c;color:#fff;padding:8px 10px;text-align:center;font-size:12px;white-space:nowrap;}
+  td{border:1px solid #d0d0d0;padding:6px 8px;vertical-align:top;}
+  td:first-child{text-align:center;color:#888;font-size:12px;width:30px;}
+  input[type=text],textarea,select{width:100%;border:1px solid #ccc;border-radius:3px;padding:5px 6px;font-size:12px;font-family:inherit;background:#fafcff;resize:vertical;}
+  textarea{min-height:60px;}
+  select{height:30px;}
+  .dept-dropdown{position:relative;}
+  .dept-trigger{width:100%;height:30px;border:1px solid #ccc;border-radius:3px;background:#fafcff;cursor:pointer;font-size:12px;font-family:inherit;padding:0 6px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:4px;}
+  .dept-trigger:hover{border-color:#999;}
+  .dept-trigger .arrow{font-size:10px;color:#888;flex-shrink:0;}
+  .dept-menu{display:none;position:absolute;top:100%;left:0;width:200px;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;padding:4px 0;max-height:220px;overflow-y:auto;}
+  .dept-menu.open{display:block;}
+  .dept-menu label{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;font-size:12px;white-space:nowrap;}
+  .dept-menu label:hover{background:#f0f4f8;}
+  .dept-menu .dept-custom-wrap{padding:4px 10px;}
+  .dept-menu .dept-custom-wrap input{height:26px;}
+  .dept-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+  .dept-tag{background:#e8f0fb;color:#1a3a5c;border-radius:10px;padding:2px 8px;font-size:11px;}
+  .interest-cell{text-align:center;min-width:90px;}
+  .interest-btn{background:none;border:1px solid #ccc;border-radius:12px;padding:3px 8px;cursor:pointer;font-size:12px;color:#888;white-space:nowrap;transition:all .15s;}
+  .interest-btn:hover{border-color:#e67e22;color:#e67e22;}
+  .interest-btn.active{background:#fff3e0;border-color:#e67e22;color:#e67e22;font-weight:bold;}
+  .interest-list{font-size:11px;color:#aaa;margin-top:4px;line-height:1.4;}
+  .btn-row{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  button.main-btn{padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-family:inherit;}
+  .btn-add{background:#1a3a5c;color:#fff;}
+  .btn-save{background:#2980b9;color:#fff;}
+  .btn-copy{background:#27ae60;color:#fff;}
+  .btn-guide{background:#8e44ad;color:#fff;}
+  .btn-del{background:#e74c3c;color:#fff;font-size:11px;padding:4px 8px;border:none;border-radius:3px;cursor:pointer;}
+  .tabs{display:flex;margin-top:28px;border-bottom:2px solid #1a3a5c;}
+  .tab-btn{padding:8px 18px;border:none;background:#eef2f7;color:#555;cursor:pointer;font-size:12px;font-family:inherit;border-radius:4px 4px 0 0;margin-right:4px;transition:all .15s;}
+  .tab-btn.active{background:#1a3a5c;color:#fff;font-weight:bold;}
+  .tab-panel{display:none;padding-top:14px;}
+  .tab-panel.active{display:block;}
+  .all-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .all-toolbar select{height:30px;width:auto;font-size:12px;border:1px solid #ccc;border-radius:3px;padding:0 6px;font-family:inherit;}
+  .refresh-btn{background:#eef2f7;border:1px solid #ccc;border-radius:4px;padding:5px 12px;cursor:pointer;font-size:12px;font-family:inherit;}
+  .refresh-btn:hover{background:#dde6f0;}
+  .card{background:#fff;border:1px solid #d0d0d0;border-radius:6px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .card-title{font-weight:bold;font-size:13px;color:#1a3a5c;margin-bottom:6px;}
+  .badge{display:inline-block;background:#eef2f7;color:#1a3a5c;border-radius:10px;padding:2px 8px;font-size:11px;margin-right:4px;margin-bottom:4px;}
+  .badge.urg-high{background:#fde8e8;color:#c0392b;}
+  .badge.urg-mid{background:#fef3e2;color:#e67e22;}
+  .badge.urg-low{background:#e8f8f0;color:#27ae60;}
+  .card-body{font-size:12px;color:#444;line-height:1.6;}
+  .card-footer{margin-top:8px;display:flex;align-items:center;gap:10px;}
+  .interest-count{font-size:12px;color:#e67e22;}
+  .interest-corps{font-size:11px;color:#aaa;}
+  .corp-section-title{font-size:12px;font-weight:bold;color:#555;background:#f0f4f8;padding:5px 10px;border-radius:4px;margin:12px 0 6px;}
+  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border-radius:8px;width:min(620px,94vw);max-height:85vh;overflow-y:auto;padding:24px 28px;position:relative;}
+  .modal h3{color:#1a3a5c;font-size:15px;margin:0 0 16px;}
+  .modal-close{position:absolute;top:14px;right:18px;background:none;border:none;font-size:20px;cursor:pointer;color:#888;}
+  .guide-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+  .step-num{min-width:28px;height:28px;background:#1a3a5c;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:13px;flex-shrink:0;}
+  .step-body{font-size:12px;line-height:1.7;color:#333;}
+  .step-body strong{color:#1a3a5c;}
+  .guide-section{font-size:12px;font-weight:bold;color:#8e44ad;margin:16px 0 8px;border-bottom:1px solid #e0d0f0;padding-bottom:4px;}
+  .guide-tip{background:#f0f4ff;border-left:3px solid #3498db;padding:8px 12px;font-size:12px;color:#1a3a5c;border-radius:0 4px 4px 0;margin-bottom:10px;line-height:1.6;}
+  .guide-warn{background:#fff8f0;border-left:3px solid #e67e22;padding:8px 12px;font-size:12px;color:#7a4000;border-radius:0 4px 4px 0;margin-bottom:10px;line-height:1.6;}
+  .status{font-size:12px;color:#888;margin-left:4px;}
+  .status.ok{color:#27ae60;}
+  .status.err{color:#e74c3c;}
+  #copyTarget{display:none;}
+  .loading{color:#aaa;font-size:13px;padding:16px;text-align:center;}
+  .empty{color:#bbb;font-size:12px;padding:12px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"><div class="spinner"></div><span id="overlayMsg">처리 중...</span></div>
+
+<!-- 가이드 모달 -->
+<div class="modal-bg" id="guideBg" onclick="closeGuide(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeGuideBtn()">✕</button>
+    <h3 id="guideTitle">📖 Guide</h3>
+    <div id="guideBody"></div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <div>
+    <h2 id="mainTitle">2026 해외CS 오프라인 컨퍼런스 — 아젠다 제출 양식</h2>
+    <div class="subtitle" id="subtitleEl">📅 컨퍼런스: 2026.05.11(월) ~ 05.12(화) &nbsp;|&nbsp; ⏰ 제출 마감: 2026.04.03(금) 18:00 KST</div>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+    <button class="main-btn btn-guide" onclick="openGuide()"><span id="btnGuideLabel">📖 Guide</span></button>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnKo" onclick="setLang('ko')">KO</button>
+      <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</div>
+
+<div class="corp-banner">
+  <label id="corpLabel">📍 내 법인 선택</label>
+  <select id="myCorpSelect" onchange="onCorpChange()"><option value="">-- 선택 --</option></select>
+  <span class="hint" id="corpHint">법인을 선택하면 해당 법인의 아젠다만 저장됩니다</span>
+  <span class="sync-info" id="syncInfo"></span>
+</div>
+
+<div class="notice" id="noticeEl">
+  ※ 이틀 일정인 만큼 법인당 <strong>핵심 아젠다 위주</strong>로 작성해 주세요.<br>
+  ※ 타부서 참여가 필요한 경우 관련 부서를 반드시 명시해 주세요.
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-input" onclick="switchTab('input')">✏️ 아젠다 입력</button>
+  <button class="tab-btn" id="tab-all" onclick="switchTab('all')">📋 전체 현황 보기</button>
+</div>
+
+<div class="tab-panel active" id="panel-input">
+  <table>
+    <thead><tr>
+      <th>No</th>
+      <th id="th-corp" style="width:75px">법인</th>
+      <th id="th-cat" style="width:90px">구분</th>
+      <th id="th-title" style="width:148px">아젠다 제목</th>
+      <th id="th-content">논의하고 싶은 내용 &amp; 논의 필요 이유<br><span id="th-content-sub" style="font-weight:normal;font-size:11px">(현황, 논의 포인트, 필요 이유 함께 작성)</span></th>
+      <th id="th-dept" style="width:130px">관련 부서</th>
+      <th id="th-urg" style="width:72px">긴급도</th>
+      <th id="th-interest" style="width:88px">관심 표시</th>
+      <th style="width:34px"></th>
+    </tr></thead>
+    <tbody id="tbody"><tr><td colspan="9" class="loading">법인을 먼저 선택해주세요.</td></tr></tbody>
+  </table>
+  <div class="btn-row">
+    <button class="main-btn btn-add" id="btnAdd" onclick="addRow()">+ 아젠다 추가</button>
+    <button class="main-btn btn-save" id="btnSave" onclick="saveData()">💾 저장</button>
+    <button class="main-btn btn-copy" id="btnCopy" onclick="copyTable()">📋 복사 (이메일용)</button>
+    <span class="status" id="statusMsg"></span>
+  </div>
+</div>
+
+<div class="tab-panel" id="panel-all">
+  <div class="all-toolbar">
+    <button class="refresh-btn" onclick="loadAllCorps()">🔄 <span id="refreshLabel">새로고침</span></button>
+    <select id="filterCorp" onchange="renderAll()"><option value="all">전체 법인</option></select>
+    <select id="filterUrg" onchange="renderAll()">
+      <option value="all" id="fUrgAll">전체 긴급도</option>
+      <option value="high" id="fUrgH">높음</option>
+      <option value="mid" id="fUrgM">보통</option>
+      <option value="low" id="fUrgL">낮음</option>
+    </select>
+    <select id="filterInterest" onchange="renderAll()">
+      <option value="all" id="fIntAll">전체</option>
+      <option value="mine" id="fIntMine">내가 관심 표시한 것만</option>
+    </select>
+  </div>
+  <div id="allCards"><div class="empty">새로고침을 눌러 전체 아젠다를 불러오세요.</div></div>
+</div>
+
+<textarea id="copyTarget"></textarea>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuQCPNGPh3VcZibk1zybL9xRtNo_rZqZQ",
+  authDomain: "conference-agenda-4e816.firebaseapp.com",
+  projectId: "conference-agenda-4e816",
+  storageBucket: "conference-agenda-4e816.firebasestorage.app",
+  messagingSenderId: "949832311651",
+  appId: "1:949832311651:web:3c946ae38831dfd4d2e956"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Firestore 저장/로드 함수를 전역으로 노출
+window.fbSave = async (corp, rows) => {
+  await setDoc(doc(db, "agendas", corp), { rows, updatedAt: new Date().toISOString() });
+};
+window.fbLoad = async (corp) => {
+  const snap = await getDoc(doc(db, "agendas", corp));
+  return snap.exists() ? snap.data().rows : [];
+};
+window.fbLoadAll = async () => {
+  const snap = await getDocs(collection(db, "agendas"));
+  const result = {};
+  snap.forEach(d => { result[d.id] = d.data().rows || []; });
+  return result;
+};
+window.fbSaveInterests = async (data) => {
+  await setDoc(doc(db, "meta", "interests"), { data, updatedAt: new Date().toISOString() });
+};
+window.fbLoadInterests = async () => {
+  const snap = await getDoc(doc(db, "meta", "interests"));
+  return snap.exists() ? snap.data().data : {};
+};
+
+window.firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<script>
+const CORPS=['HQ','USA','Japan','China','Asia','EU','Germany','India','Oceania','Vietnam','Türkiye','France'];
+const CATS_KO=['목표','공유','SW','정책','교육','관리','품질','자재','업데이트 요청','기타'];
+const CATS_EN=['Goal','Sharing','SW','Policy','Training','Management','Quality','Materials','Update Request','Other'];
+const DEPTS_KO=['CS 내부 논의','SW','품질','구매','물류','영업','영업관리','개발','인프라'];
+const DEPTS_EN=['CS Internal','SW','Quality','Purchasing','Logistics','Sales','Sales Ops','Development','Infrastructure'];
+const URGS_KO=['높음','보통','낮음'];
+const URGS_EN=['High','Medium','Low'];
+
+let lang='ko', rowCount=0, interestData={}, allCorpData={};
+
+const GUIDE={
+  ko:{title:'📖 Guide',sections:[
+    {title:'📌 시작하기',steps:[{n:1,text:'<strong>내 법인 선택</strong> — 상단 파란 배너에서 본인 법인을 먼저 선택하세요.'},{n:2,text:'<strong>[✏️ 아젠다 입력] 탭</strong>에서 아젠다를 작성하세요.'}]},
+    {title:'✍️ 아젠다 작성 방법',steps:[{n:1,text:'<strong>법인</strong> — 본인 법인이 자동 선택됩니다.'},{n:2,text:'<strong>구분</strong> — 아젠다 성격에 맞는 카테고리를 선택하세요.'},{n:3,text:'<strong>아젠다 제목</strong> — 한 줄로 핵심을 담아 작성해주세요.'},{n:4,text:'<strong>논의 내용 & 이유</strong> — 현재 상황, 논의 포인트, 필요 이유를 함께 작성해주세요.'},{n:5,text:'<strong>관련 부서</strong> — 타부서 참여가 필요한 경우 선택. <u>여러 개 선택 가능</u>합니다.'},{n:6,text:'<strong>긴급도</strong> — 높음 / 보통 / 낮음 중 선택하세요.'}]},
+    {title:'💾 저장 & 관심 표시',steps:[{n:1,text:'작성 완료 후 <strong>[💾 저장]</strong>을 눌러주세요. Firebase에 실시간 저장됩니다.'},{n:2,text:'다른 법인 아젠다에 <strong>[👍 관심있어요]</strong>를 눌러주세요. 세션 우선순위에 반영됩니다.'}]},
+    {title:'📋 전체 현황 보기',steps:[{n:1,text:'<strong>[📋 전체 현황 보기] 탭</strong>에서 모든 법인 아젠다를 확인할 수 있습니다.'},{n:2,text:'<strong>[🔄 새로고침]</strong>으로 최신 데이터를 불러오세요.'},{n:3,text:'법인 / 긴급도 / 관심 여부로 필터링할 수 있습니다.'}]},
+    {title:'⚠️ 주의사항',tips:['이번 컨퍼런스는 <strong>이틀(5/11~12)</strong>이므로 핵심 아젠다 위주로 제출해주세요.','제출 마감은 <strong>2026.04.03(금) 18:00 KST</strong>입니다.','마감 후에도 추가 가능하지만 세션 배정에 반영되지 않을 수 있습니다.']}
+  ]},
+  en:{title:'📖 Guide',sections:[
+    {title:'📌 Getting Started',steps:[{n:1,text:'<strong>Select Your Entity</strong> — Choose your entity from the blue banner at the top.'},{n:2,text:'Go to the <strong>[✏️ Input Agenda] tab</strong> to write your agendas.'}]},
+    {title:'✍️ How to Fill In',steps:[{n:1,text:'<strong>Entity</strong> — Auto-filled with your selected entity.'},{n:2,text:'<strong>Category</strong> — Choose the best fitting category.'},{n:3,text:'<strong>Agenda Title</strong> — Keep it concise and clear.'},{n:4,text:'<strong>Content & Reason</strong> — Describe the situation, discussion points, and reasons.'},{n:5,text:'<strong>Related Dept.</strong> — Select if HQ involvement is needed. <u>Multiple selections allowed.</u>'},{n:6,text:'<strong>Urgency</strong> — Select High / Medium / Low.'}]},
+    {title:'💾 Save & Interest',steps:[{n:1,text:'Click <strong>[💾 Save]</strong> after filling in. Data is saved to Firebase in real time.'},{n:2,text:'Click <strong>[👍 Interested]</strong> on agendas you care about. Used for session prioritization.'}]},
+    {title:'📋 View All Agendas',steps:[{n:1,text:'Switch to <strong>[📋 All Agendas] tab</strong> to see all entities\' agendas.'},{n:2,text:'Click <strong>[🔄 Refresh]</strong> to load the latest data.'},{n:3,text:'Filter by entity, urgency, or interest.'}]},
+    {title:'⚠️ Notes',tips:['Conference is only <strong>2 days (May 11–12)</strong>. Focus on your most critical agendas.','Submission deadline: <strong>Apr 3, 2026 (Fri) 18:00 KST</strong>.']}
+  ]}
+};
+
+const UI={
+  ko:{title:'2026 해외CS 오프라인 컨퍼런스 — 아젠다 제출 양식',subtitle:'📅 컨퍼런스: 2026.05.11(월) ~ 05.12(화) &nbsp;|&nbsp; ⏰ 제출 마감: 2026.04.03(금) 18:00 KST',notice:'※ 이틀 일정인 만큼 법인당 <strong>핵심 아젠다 위주</strong>로 작성해 주세요.<br>※ 타부서 참여가 필요한 경우 관련 부서를 반드시 명시해 주세요.',corpLabel:'📍 내 법인 선택',corpHint:'법인을 선택하면 해당 법인의 아젠다만 저장됩니다',thCorp:'법인',thCat:'구분',thTitle:'아젠다 제목',thContent:'논의하고 싶은 내용 &amp; 논의 필요 이유',thContentSub:'(현황, 논의 포인트, 필요 이유 함께 작성)',thDept:'관련 부서',thUrg:'긴급도',thInterest:'관심 표시',btnAdd:'+ 아젠다 추가',btnSave:'💾 저장',btnCopy:'📋 복사 (이메일용)',tabInput:'✏️ 아젠다 입력',tabAll:'📋 전체 현황 보기',refreshLabel:'새로고침',fUrgAll:'전체 긴급도',fUrgH:'높음',fUrgM:'보통',fUrgL:'낮음',fIntAll:'전체',fIntMine:'내가 관심 표시한 것만',interestBtn:'👍 관심있어요',interestActive:'✅ 관심있어요',translating:'번역 중...',processing:'처리 중...',saved:'개 아젠다 저장 완료',loaded:'개 아젠다 불러옴',noData:'저장할 데이터가 없습니다.',saveFail:'저장 실패',saveErr:'저장 오류: ',selectCorp:'-- 선택 --',selectCorpAlert:'상단에서 내 법인을 먼저 선택해주세요.',selectCorpFirst:'법인을 먼저 선택해주세요.',noAgenda:'아젠다를 먼저 입력해주세요.',copied:'클립보드에 복사됐습니다!\n이메일 본문 또는 엑셀에 붙여넣기 하세요.',deptPh:'부서 선택 (복수 가능)',deptCustomPh:'부서명 직접 입력',deptOther:'기타(직접입력)',titlePh:'아젠다 제목',contentPh:'현재 상황, 논의하고 싶은 포인트, 논의가 필요한 이유를 함께 작성해주세요.',interestCount:'개 법인 관심',noAllData:'새로고침을 눌러 전체 아젠다를 불러오세요.',noMatch:'해당하는 아젠다가 없습니다.',copyHeader:'No\t법인\t구분\t아젠다 제목\t논의 내용 및 필요 이유\t관련 부서\t긴급도\t관심 법인\n',syncSaved:(c,n)=>`✅ ${c} ${n}개 저장됨`},
+  en:{title:'2026 Global CS Offline Conference — Agenda Submission Form',subtitle:'📅 Conference: May 11(Mon) ~ May 12(Tue), 2026 &nbsp;|&nbsp; ⏰ Deadline: Apr 3(Fri), 2026 18:00 KST',notice:'※ As the conference is only two days, please focus on <strong>key agendas</strong> per entity.<br>※ If other departments need to be involved, please specify.',corpLabel:'📍 Select My Entity',corpHint:"Only your entity's agendas will be saved",thCorp:'Entity',thCat:'Category',thTitle:'Agenda Title',thContent:'Discussion Content &amp; Reason',thContentSub:'(Current status, discussion points, and reasons together)',thDept:'Related Dept.',thUrg:'Urgency',thInterest:'Interest',btnAdd:'+ Add Agenda',btnSave:'💾 Save',btnCopy:'📋 Copy (for email)',tabInput:'✏️ Input Agenda',tabAll:'📋 All Agendas',refreshLabel:'Refresh',fUrgAll:'All Urgency',fUrgH:'High',fUrgM:'Medium',fUrgL:'Low',fIntAll:'All',fIntMine:'Only ones I marked',interestBtn:'👍 Interested',interestActive:'✅ Interested',translating:'Translating...',processing:'Processing...',saved:' agendas saved',loaded:' agendas loaded',noData:'No data to save.',saveFail:'Save failed',saveErr:'Save error: ',selectCorp:'-- Select --',selectCorpAlert:'Please select your entity at the top first.',selectCorpFirst:'Please select your entity first.',noAgenda:'Please enter an agenda first.',copied:'Copied to clipboard!\nPaste into email or Excel.',deptPh:'Select dept. (multi)',deptCustomPh:'Enter department name',deptOther:'Other (Custom)',titlePh:'Agenda title',contentPh:'Please describe the current situation, discussion points, and reasons.',interestCount:' entities interested',noAllData:'Click Refresh to load all agendas.',noMatch:'No matching agendas.',copyHeader:'No\tEntity\tCategory\tAgenda Title\tContent & Reason\tRelated Dept.\tUrgency\tInterested Entities\n',syncSaved:(c,n)=>`✅ ${c}: ${n} saved`}
+};
+
+function t(k){return UI[lang][k]||'';}
+function cats(){return lang==='ko'?CATS_KO:CATS_EN;}
+function depts(){return lang==='ko'?DEPTS_KO:DEPTS_EN;}
+function urgs(){return lang==='ko'?URGS_KO:URGS_EN;}
+function opts(arr,sel){return arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');}
+function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'):'';}
+function showOverlay(m){document.getElementById('overlayMsg').textContent=m;document.getElementById('overlay').classList.add('show');}
+function hideOverlay(){document.getElementById('overlay').classList.remove('show');}
+
+function openGuide(){
+  const g=GUIDE[lang];
+  document.getElementById('guideTitle').textContent=g.title;
+  document.getElementById('guideBody').innerHTML=g.sections.map(sec=>{
+    let html=`<div class="guide-section">${sec.title}</div>`;
+    if(sec.steps) html+=sec.steps.map(s=>`<div class="guide-step"><div class="step-num">${s.n}</div><div class="step-body">${s.text}</div></div>`).join('');
+    if(sec.tips) html+=sec.tips.map(tip=>`<div class="guide-warn">${tip}</div>`).join('');
+    return html;
+  }).join('');
+  document.getElementById('guideBg').classList.add('show');
+}
+function closeGuide(e){if(e.target===document.getElementById('guideBg'))closeGuideBtn();}
+function closeGuideBtn(){document.getElementById('guideBg').classList.remove('show');}
+
+function makeDeptDropdown(n,selectedDepts){
+  selectedDepts=selectedDepts||[];
+  const dList=depts();
+  const hasCustom=selectedDepts.some(d=>!dList.includes(d));
+  const customVal=hasCustom?selectedDepts.find(d=>!dList.includes(d)):'';
+  return `<div class="dept-dropdown" id="deptDrop-${n}">
+    <button type="button" class="dept-trigger" id="deptTrigger-${n}" onclick="toggleDeptMenu(${n})">
+      <span id="deptLabel-${n}">${t('deptPh')}</span><span class="arrow">▾</span>
+    </button>
+    <div class="dept-menu" id="deptMenu-${n}">
+      ${dList.map(d=>`<label><input type="checkbox" value="${d}" onchange="updateDeptTags(${n})" ${selectedDepts.includes(d)?'checked':''}>${d}</label>`).join('')}
+      <label><input type="checkbox" value="__other__" onchange="toggleDeptOther(${n})" ${hasCustom?'checked':''}>${t('deptOther')}</label>
+      <div class="dept-custom-wrap" id="deptOtherWrap-${n}" style="display:${hasCustom?'block':'none'}">
+        <input type="text" id="deptOther-${n}" placeholder="${t('deptCustomPh')}" value="${esc(customVal)}" oninput="updateDeptTags(${n})">
+      </div>
+    </div>
+    <div class="dept-tags" id="deptTags-${n}"></div>
+  </div>`;
+}
+
+function toggleDeptMenu(n){
+  const menu=document.getElementById(`deptMenu-${n}`);
+  const isOpen=menu.classList.contains('open');
+  document.querySelectorAll('.dept-menu.open').forEach(m=>m.classList.remove('open'));
+  if(!isOpen) menu.classList.add('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.dept-dropdown'))document.querySelectorAll('.dept-menu.open').forEach(m=>m.classList.remove('open'));});
+
+function toggleDeptOther(n){
+  const cb=document.querySelector(`#deptMenu-${n} input[value="__other__"]`);
+  document.getElementById(`deptOtherWrap-${n}`).style.display=cb.checked?'block':'none';
+  updateDeptTags(n);
+}
+function updateDeptTags(n){
+  const menu=document.getElementById(`deptMenu-${n}`);
+  const selected=[];
+  menu.querySelectorAll('input[type=checkbox]:checked').forEach(cb=>{
+    if(cb.value==='__other__'){const v=document.getElementById(`deptOther-${n}`).value.trim();if(v)selected.push(v);}
+    else selected.push(cb.value);
+  });
+  document.getElementById(`deptTags-${n}`).innerHTML=selected.map(d=>`<span class="dept-tag">${d}</span>`).join('');
+  document.getElementById(`deptLabel-${n}`).textContent=selected.length?`${selected.length}개 선택`:t('deptPh');
+}
+function getDepts(n){
+  const menu=document.getElementById(`deptMenu-${n}`);if(!menu)return[];
+  const selected=[];
+  menu.querySelectorAll('input[type=checkbox]:checked').forEach(cb=>{
+    if(cb.value==='__other__'){const v=document.getElementById(`deptOther-${n}`).value.trim();if(v)selected.push(v);}
+    else selected.push(cb.value);
+  });
+  return selected;
+}
+
+function switchTab(tab){
+  ['input','all'].forEach(id=>{
+    document.getElementById('panel-'+id).classList.toggle('active',id===tab);
+    document.getElementById('tab-'+id).classList.toggle('active',id===tab);
+  });
+  if(tab==='all') loadAllCorps();
+}
+
+function applyUILang(){
+  document.getElementById('mainTitle').textContent=t('title');
+  document.getElementById('subtitleEl').innerHTML=t('subtitle');
+  document.getElementById('noticeEl').innerHTML=t('notice');
+  document.getElementById('corpLabel').textContent=t('corpLabel');
+  document.getElementById('corpHint').textContent=t('corpHint');
+  ['corp','cat','title','dept','urg','interest'].forEach(k=>{const el=document.getElementById('th-'+k);if(el)el.textContent=t('th'+k.charAt(0).toUpperCase()+k.slice(1));});
+  document.getElementById('th-content').innerHTML=t('thContent')+'<br><span style="font-weight:normal;font-size:11px">'+t('thContentSub')+'</span>';
+  document.getElementById('btnAdd').textContent=t('btnAdd');
+  document.getElementById('btnSave').textContent=t('btnSave');
+  document.getElementById('btnCopy').textContent=t('btnCopy');
+  document.getElementById('btnGuideLabel').textContent='📖 Guide';
+  document.getElementById('tab-input').textContent=t('tabInput');
+  document.getElementById('tab-all').textContent=t('tabAll');
+  document.getElementById('refreshLabel').textContent=t('refreshLabel');
+  document.getElementById('fUrgAll').textContent=t('fUrgAll');
+  document.getElementById('fUrgH').textContent=t('fUrgH');
+  document.getElementById('fUrgM').textContent=t('fUrgM');
+  document.getElementById('fUrgL').textContent=t('fUrgL');
+  document.getElementById('fIntAll').textContent=t('fIntAll');
+  document.getElementById('fIntMine').textContent=t('fIntMine');
+  document.getElementById('myCorpSelect').options[0].textContent=t('selectCorp');
+  document.querySelectorAll('#tbody tr[id]').forEach(tr=>{
+    const c=tr.querySelectorAll('td'),n=parseInt(tr.id.replace('row-',''));
+    const cs=c[2].querySelector('select'),ci=cs.selectedIndex;cs.innerHTML=cats().map(v=>`<option>${v}</option>`).join('');cs.selectedIndex=Math.min(ci,cats().length-1);
+    const us=c[6].querySelector('select'),ui=us.selectedIndex;us.innerHTML=urgs().map(v=>`<option>${v}</option>`).join('');us.selectedIndex=Math.min(ui,urgs().length-1);
+    c[3].querySelector('input').placeholder=t('titlePh');
+    c[4].querySelector('textarea').placeholder=t('contentPh');
+  });
+  renderAll();
+}
+
+async function setLang(l){
+  if(l===lang)return;lang=l;
+  document.getElementById('btnKo').classList.toggle('active',l==='ko');
+  document.getElementById('btnEn').classList.toggle('active',l==='en');
+  applyUILang();
+  await translateContent(l);
+}
+
+async function translateContent(toLang){
+  const rows=getRows();if(!rows.length)return;
+  showOverlay(t('translating'));
+  const payload=rows.map((r,i)=>({idx:i,title:r.title,content:r.content}));
+  const target=toLang==='en'?'English':'Korean';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Translate to ${target}. Return ONLY a JSON array with idx, title, content. No explanation or markdown.\n\n${JSON.stringify(payload)}`}]})});
+    const data=await res.json();
+    const txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const translated=JSON.parse(txt);
+    document.querySelectorAll('#tbody tr[id]').forEach((tr,i)=>{
+      const m=translated.find(t=>t.idx===i);if(!m)return;
+      const c=tr.querySelectorAll('td');c[3].querySelector('input').value=m.title||'';c[4].querySelector('textarea').value=m.content||'';
+    });
+  }catch(e){console.error(e);}finally{hideOverlay();}
+}
+
+function makeRow(d){
+  rowCount++;
+  const n=rowCount,rowKey=d&&d.key?d.key:'r'+Date.now()+'_'+n;
+  const myCorp=document.getElementById('myCorpSelect').value;
+  const savedDepts=d&&d.depts?d.depts:(d&&d.dept?[d.dept]:[]);
+  const tr=document.createElement('tr');
+  tr.id='row-'+n;tr.dataset.key=rowKey;
+  tr.innerHTML=`
+    <td>${n}</td>
+    <td><select>${opts(CORPS,d&&d.corp||myCorp)}</select></td>
+    <td><select>${opts(cats(),d&&d.cat)}</select></td>
+    <td><input type="text" placeholder="${t('titlePh')}" value="${esc(d&&d.title)}"></td>
+    <td><textarea placeholder="${t('contentPh')}" style="min-height:80px">${esc(d&&d.content)}</textarea></td>
+    <td>${makeDeptDropdown(n,savedDepts)}</td>
+    <td><select>${opts(urgs(),d&&d.urg)}</select></td>
+    <td class="interest-cell"><button class="interest-btn" id="ibtn-${n}" onclick="toggleInterest('${rowKey}',${n})">${t('interestBtn')}</button><div class="interest-list" id="ilist-${n}"></div></td>
+    <td><button class="btn-del" onclick="delRow('row-${n}')">✕</button></td>`;
+  setTimeout(()=>updateDeptTags(n),0);
+  return tr;
+}
+
+function addRow(d){
+  const mc=document.getElementById('myCorpSelect').value;
+  if(!mc){alert(t('selectCorpAlert'));return;}
+  document.getElementById('tbody').appendChild(makeRow(d||null));
+  refreshInterestUI();
+}
+function delRow(id){const el=document.getElementById(id);if(el)el.remove();}
+
+function getRows(){
+  return Array.from(document.querySelectorAll('#tbody tr[id]')).map(tr=>{
+    const c=tr.querySelectorAll('td'),n=parseInt(tr.id.replace('row-',''));
+    return{corp:c[1].querySelector('select').value,cat:c[2].querySelector('select').value,title:c[3].querySelector('input').value,content:c[4].querySelector('textarea').value,depts:getDepts(n),urg:c[6].querySelector('select').value,key:tr.dataset.key};
+  });
+}
+
+async function toggleInterest(rowKey,n){
+  const mc=document.getElementById('myCorpSelect').value;
+  if(!mc){alert(t('selectCorpAlert'));return;}
+  if(!interestData[rowKey])interestData[rowKey]=[];
+  const idx=interestData[rowKey].indexOf(mc);
+  if(idx===-1)interestData[rowKey].push(mc);else interestData[rowKey].splice(idx,1);
+  refreshInterestUI();
+  await window.fbSaveInterests(interestData);
+  renderAll();
+}
+
+function onCorpChange(){
+  const corp=document.getElementById('myCorpSelect').value;
+  if(!corp){document.getElementById('tbody').innerHTML=`<tr><td colspan="9" class="loading">${t('selectCorpFirst')}</td></tr>`;rowCount=0;return;}
+  loadCorpData(corp);
+}
+
+function refreshInterestUI(){
+  const mc=document.getElementById('myCorpSelect').value;
+  document.querySelectorAll('#tbody tr[id]').forEach(tr=>{
+    const key=tr.dataset.key,n=parseInt(tr.id.replace('row-',''));
+    const btn=document.getElementById('ibtn-'+n),list=document.getElementById('ilist-'+n);
+    if(!btn||!list)return;
+    const corps=interestData[key]||[],active=mc&&corps.includes(mc);
+    btn.className='interest-btn'+(active?' active':'');
+    btn.textContent=active?t('interestActive'):t('interestBtn');
+    list.textContent=corps.length?corps.join(', '):'';
+  });
+}
+
+async function saveData(){
+  const corp=document.getElementById('myCorpSelect').value;
+  if(!corp){setStatus(t('selectCorpAlert'),'err');return;}
+  const rows=getRows();if(!rows.length){setStatus(t('noData'),'err');return;}
+  showOverlay(t('processing'));
+  try{
+    await window.fbSave(corp,rows);
+    setStatus(`✅ ${rows.length}${t('saved')}`,'ok');
+    document.getElementById('syncInfo').textContent=UI[lang].syncSaved(corp,rows.length);
+  }catch(e){setStatus(t('saveErr')+e.message,'err');}finally{hideOverlay();}
+}
+
+async function loadCorpData(corp){
+  showOverlay(t('processing'));
+  try{
+    const rows=await window.fbLoad(corp);
+    document.getElementById('tbody').innerHTML='';rowCount=0;
+    if(rows.length){rows.forEach(r=>document.getElementById('tbody').appendChild(makeRow(r)));refreshInterestUI();setStatus(`✅ ${rows.length}${t('loaded')}`,'ok');}
+    else{document.getElementById('tbody').appendChild(makeRow(null));refreshInterestUI();}
+  }catch(e){document.getElementById('tbody').innerHTML='';rowCount=0;document.getElementById('tbody').appendChild(makeRow(null));}
+  finally{hideOverlay();}
+}
+
+async function loadAllCorps(){
+  showOverlay(t('processing'));
+  try{
+    allCorpData=await window.fbLoadAll();
+    const fCorp=document.getElementById('filterCorp');
+    fCorp.innerHTML=`<option value="all">${lang==='ko'?'전체 법인':'All Entities'}</option>`+CORPS.filter(c=>allCorpData[c]&&allCorpData[c].length).map(c=>`<option value="${c}">${c}</option>`).join('');
+    renderAll();
+  }catch(e){console.error(e);}finally{hideOverlay();}
+}
+
+function renderAll(){
+  const mc=document.getElementById('myCorpSelect').value;
+  const fCorp=document.getElementById('filterCorp').value;
+  const fUrg=document.getElementById('filterUrg').value;
+  const fInt=document.getElementById('filterInterest').value;
+  const container=document.getElementById('allCards');
+  const allRows=[];
+  CORPS.forEach(corp=>{if(allCorpData[corp])allCorpData[corp].forEach(r=>allRows.push({...r,_corp:corp}));});
+  if(!allRows.length){container.innerHTML=`<div class="empty">${t('noAllData')}</div>`;return;}
+  const urgMap={높음:'high',보통:'mid',낮음:'low',High:'high',Medium:'mid',Low:'low'};
+  const filtered=allRows.filter(r=>{
+    if(fCorp!=='all'&&r._corp!==fCorp)return false;
+    if(fUrg!=='all'&&urgMap[r.urg]!==fUrg)return false;
+    if(fInt==='mine'&&!(interestData[r.key]||[]).includes(mc))return false;
+    return true;
+  });
+  if(!filtered.length){container.innerHTML=`<div class="empty">${t('noMatch')}</div>`;return;}
+  const grouped={};
+  filtered.forEach(r=>{if(!grouped[r._corp])grouped[r._corp]=[];grouped[r._corp].push(r);});
+  container.innerHTML=Object.entries(grouped).map(([corp,rows])=>{
+    const cards=rows.map(r=>{
+      const corps=interestData[r.key]||[];
+      const urgCls=(r.urg==='높음'||r.urg==='High')?'urg-high':(r.urg==='보통'||r.urg==='Medium')?'urg-mid':'urg-low';
+      const deptList=r.depts&&r.depts.length?r.depts:(r.dept?[r.dept]:[]);
+      return `<div class="card">
+        <div><span class="badge">${r.corp||corp}</span><span class="badge">${r.cat}</span>
+          <span class="badge ${urgCls}">${t('thUrg')}: ${r.urg}</span>
+          ${deptList.map(d=>`<span class="badge">${d}</span>`).join('')}
+        </div>
+        <div class="card-title">${r.title||'(제목 없음)'}</div>
+        <div class="card-body">${(r.content||'').replace(/\n/g,'<br>')}</div>
+        <div class="card-footer">
+          <span class="interest-count">👍 ${corps.length}${t('interestCount')}</span>
+          <span class="interest-corps">${corps.join(', ')}</span>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="corp-section-title">🏢 ${corp} (${rows.length})</div>${cards}`;
+  }).join('');
+}
+
+function setStatus(msg,type){
+  const el=document.getElementById('statusMsg');el.textContent=msg;el.className='status '+(type||'');
+  if(type==='ok')setTimeout(()=>{el.textContent='';el.className='status';},3000);
+}
+
+function copyTable(){
+  const rows=getRows();if(!rows.length){alert(t('noAgenda'));return;}
+  let text=t('copyHeader');
+  rows.forEach((r,i)=>{
+    const corps=(interestData[r.key]||[]).join(', ');
+    const deptStr=(r.depts||[]).join(', ')||'-';
+    text+=[i+1,r.corp,r.cat,r.title||'-',r.content.replace(/\n/g,' ')||'-',deptStr,r.urg,corps||'-'].join('\t')+'\n';
+  });
+  const ta=document.getElementById('copyTarget');
+  ta.style.display='block';ta.value=text;ta.select();document.execCommand('copy');ta.style.display='none';
+  alert('✅ '+t('copied'));
+}
+
+// 초기화 — Firebase 준비 후 실행
+async function init(){
+  interestData = await window.fbLoadInterests();
+  document.getElementById('myCorpSelect').innerHTML=`<option value="">${t('selectCorp')}</option>`+CORPS.map(c=>`<option>${c}</option>`).join('');
+}
+
+if(window.firebaseReady){init();}
+else{window.addEventListener('firebaseReady',init);}
+</script>
+</body>
+</html>
