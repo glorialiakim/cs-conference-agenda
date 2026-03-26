@@ -111,6 +111,26 @@ textarea{min-height:60px;}select{height:30px;}
 #copyTarget{display:none;}
 .loading{color:#aaa;font-size:13px;padding:16px;text-align:center;}
 .empty{color:#bbb;font-size:12px;padding:16px;text-align:center;}
+
+/* ===== 댓글 스타일 ===== */
+.comment-section{margin-top:10px;border-top:1px solid #eee;padding-top:8px;}
+.comment-toggle{background:none;border:none;color:#888;font-size:12px;cursor:pointer;padding:0;font-family:inherit;}
+.comment-toggle:hover{color:#1a3a5c;}
+.comment-list{margin-top:8px;}
+.comment-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+.comment-avatar{min-width:28px;height:28px;background:#1a3a5c;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;flex-shrink:0;}
+.comment-bubble{background:#f5f7fa;border-radius:8px;padding:7px 10px;flex:1;position:relative;}
+.comment-author{font-size:11px;font-weight:bold;color:#1a3a5c;}
+.comment-time{font-size:10px;color:#aaa;margin-left:6px;}
+.comment-text{font-size:12px;color:#333;margin-top:2px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.comment-delete{position:absolute;top:4px;right:6px;background:none;border:none;color:#ccc;cursor:pointer;font-size:13px;padding:0 2px;line-height:1;}
+.comment-delete:hover{color:#e74c3c;}
+.comment-input-wrap{display:flex;gap:6px;margin-top:8px;align-items:flex-end;}
+.comment-input{flex:1;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;resize:none;min-height:34px;max-height:80px;background:#fafcff;}
+.comment-input:focus{outline:none;border-color:#2980b9;}
+.comment-send{background:#1a3a5c;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;height:34px;}
+.comment-send:hover{background:#2563a8;}
+.comment-send:disabled{opacity:.4;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -238,7 +258,9 @@ window.FB = {
   load:          async (corp) => { const s=await getDoc(doc(db,"agendas",corp)); return s.exists()?s.data().rows:[]; },
   loadAll:       async ()     => { const s=await getDocs(collection(db,"agendas")); const r={}; s.forEach(d=>{r[d.id]=d.data().rows||[];}); return r; },
   saveInterests: (data)       => setDoc(doc(db,"meta","interests"), {data, updatedAt: new Date().toISOString()}),
-  loadInterests: async ()     => { const s=await getDoc(doc(db,"meta","interests")); return s.exists()?s.data().data:{}; }
+  loadInterests: async ()     => { const s=await getDoc(doc(db,"meta","interests")); return s.exists()?s.data().data:{}; },
+  saveComments:  (data)       => setDoc(doc(db,"meta","comments"), {data, updatedAt: new Date().toISOString()}),
+  loadComments:  async ()     => { const s=await getDoc(doc(db,"meta","comments")); return s.exists()?s.data().data:{}; }
 };
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
@@ -255,7 +277,7 @@ var URGS_EN  = ['High','Medium','Low'];
 var GUIDE_KEY = 'cs_conf_guide_v5';
 
 /* ===== 상태 ===== */
-var lang = 'ko', rowCount = 0, interestData = {}, allCorpData = {}, dashOpen = false;
+var lang = 'ko', rowCount = 0, interestData = {}, commentData = {}, allCorpData = {}, dashOpen = false;
 
 /* ===== 텍스트 ===== */
 var TX = {
@@ -286,6 +308,10 @@ var TX = {
     deleteConfirm:'이 아젠다를 삭제할까요?', deleteBtn:'삭제',
     copyHeader:'No\t법인\t구분\t아젠다 제목\t논의 내용 및 필요 이유\t관련 부서\t긴급도\t관심 법인\n',
     syncSaved: function(c,n){ return '✅ '+c+' '+n+'개 저장됨'; },
+    cmtToggle: function(n){ return '💬 댓글 '+n+'개'; },
+    cmtToggleNone:'💬 댓글 작성', cmtPh:'댓글을 입력하세요...', cmtSend:'등록',
+    cmtNeedCorp:'댓글을 작성하려면 법인을 선택해주세요.', cmtDeleteConfirm:'이 댓글을 삭제할까요?',
+    cmtJustNow:'방금 전', cmtMinAgo:'분 전', cmtHourAgo:'시간 전', cmtDayAgo:'일 전',
     guide: {
       title:'📖 Guide', sub:'2026 해외CS 오프라인 컨퍼런스 아젠다 제출 안내',
       dontShow:'다시 보지 않기', gotIt:'확인했습니다',
@@ -301,10 +327,11 @@ var TX = {
           {n:4, text:'<strong>관련 부서</strong> — 타부서 필요 시 선택 (복수 가능)'},
           {n:5, text:'<strong>긴급도</strong> — 높음/보통/낮음 선택'}
         ]},
-        {title:'💾 저장 & 관심 표시', steps:[
+        {title:'💾 저장 & 관심 & 댓글', steps:[
           {n:1, text:'<strong>[💾 저장]</strong> 후 하단에 전체 아젠다가 표시됩니다.'},
           {n:2, text:'다른 법인 아젠다에 <strong>[👍 관심있어요]</strong>를 눌러주세요.'},
-          {n:3, text:'내 법인 아젠다에는 빨간 <strong>[삭제]</strong> 버튼이 표시됩니다.'}
+          {n:3, text:'<strong>[💬 댓글]</strong>로 의견이나 질문을 남길 수 있습니다. 법인명이 작성자로 표시됩니다.'},
+          {n:4, text:'내 법인 아젠다에는 빨간 <strong>[삭제]</strong> 버튼이 표시됩니다.'}
         ]},
         {title:'⚠️ 주의사항', tips:[
           '컨퍼런스는 <strong>이틀(5/11~12)</strong>. 핵심 아젠다 위주로 제출해주세요.',
@@ -340,6 +367,10 @@ var TX = {
     deleteConfirm:'Delete this agenda?', deleteBtn:'Delete',
     copyHeader:'No\tEntity\tCategory\tAgenda Title\tContent & Reason\tRelated Dept.\tUrgency\tInterested Entities\n',
     syncSaved: function(c,n){ return '✅ '+c+': '+n+' saved'; },
+    cmtToggle: function(n){ return '💬 '+n+' comments'; },
+    cmtToggleNone:'💬 Write a comment', cmtPh:'Write a comment...', cmtSend:'Post',
+    cmtNeedCorp:'Please select your entity to comment.', cmtDeleteConfirm:'Delete this comment?',
+    cmtJustNow:'just now', cmtMinAgo:'m ago', cmtHourAgo:'h ago', cmtDayAgo:'d ago',
     guide: {
       title:'📖 Guide', sub:'2026 Global CS Offline Conference — Agenda Submission Guide',
       dontShow:"Don't show again", gotIt:'Got it',
@@ -355,10 +386,11 @@ var TX = {
           {n:4, text:'<strong>Related Dept.</strong> — Multi-select if needed'},
           {n:5, text:'<strong>Urgency</strong> — High / Medium / Low'}
         ]},
-        {title:'💾 Save & Interest', steps:[
+        {title:'💾 Save & Interest & Comments', steps:[
           {n:1, text:'Click <strong>[💾 Save]</strong> — all agendas appear below.'},
           {n:2, text:'Click <strong>[👍 Interested]</strong> on other entities\' agendas.'},
-          {n:3, text:'A red <strong>[Delete]</strong> button appears on your own agendas.'}
+          {n:3, text:'Use <strong>[💬 Comments]</strong> to leave feedback or questions. Your entity name appears as the author.'},
+          {n:4, text:'A red <strong>[Delete]</strong> button appears on your own agendas.'}
         ]},
         {title:'⚠️ Notes', tips:[
           'Conference is <strong>2 days only (May 11–12)</strong>.',
@@ -381,6 +413,14 @@ function showOv(m){ document.getElementById('overlayMsg').textContent=m; documen
 function hideOv(){ document.getElementById('overlay').classList.remove('show'); }
 function warn(show){ document.getElementById('corpWarning').textContent=tx('corpWarn'); document.getElementById('corpWarning').classList.toggle('show',show); }
 function setStatus(msg,type){ var el=document.getElementById('statusMsg'); el.textContent=msg; el.className='status '+(type||''); if(type==='ok') setTimeout(function(){ el.textContent=''; el.className='status'; },3000); }
+
+function timeAgo(ts){
+  var diff=Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(diff<60) return tx('cmtJustNow');
+  if(diff<3600) return Math.floor(diff/60)+tx('cmtMinAgo');
+  if(diff<86400) return Math.floor(diff/3600)+tx('cmtHourAgo');
+  return Math.floor(diff/86400)+tx('cmtDayAgo');
+}
 
 /* ===== 법인 select 즉시 초기화 ===== */
 function buildCorpSelect() {
@@ -600,12 +640,35 @@ document.getElementById('myCorpSelect').onchange = onCorpChange;
 async function saveData(){
   var corp=mc();
   if (!corp){ warn(true); setStatus(tx('needCorp'),'err'); return; }
-  var rows=getRows(); if (!rows.length){ setStatus(tx('noData'),'err'); return; }
+  var rows=getRows();
+
+  // ① 빈 내용만 있는 행 필터링 (제목+내용 둘 다 비어있으면 제외)
+  var validRows = rows.filter(function(r){ return (r.title||'').trim() || (r.content||'').trim(); });
+
+  // ② 기존 데이터가 있는데 유효 행이 0개면 → 실수 방지 차단
+  var existing = await window.FB.load(corp);
+  if (existing.length > 0 && validRows.length === 0) {
+    alert(lang==='ko'
+      ? '⚠️ 기존에 '+existing.length+'개 아젠다가 저장되어 있습니다.\n빈 상태로 저장하면 기존 데이터가 삭제됩니다.\n아젠다를 입력한 후 저장해주세요.'
+      : '⚠️ '+existing.length+' existing agendas found.\nSaving empty will delete all data.\nPlease enter agendas before saving.');
+    return;
+  }
+
+  // ③ 기존보다 줄어들면 확인 다이얼로그
+  if (existing.length > 0 && validRows.length < existing.length) {
+    var msg = lang==='ko'
+      ? '기존 '+existing.length+'개 → '+validRows.length+'개로 줄어듭니다.\n정말 저장할까요?'
+      : 'Agendas will decrease from '+existing.length+' to '+validRows.length+'.\nProceed?';
+    if (!confirm(msg)) return;
+  }
+
+  if (!validRows.length){ setStatus(tx('noData'),'err'); return; }
+
   showOv(tx('processing'));
   try {
-    await window.FB.save(corp, rows);
-    setStatus('✅ '+rows.length+tx('saved'), 'ok');
-    document.getElementById('syncInfo').textContent = TX[lang].syncSaved(corp, rows.length);
+    await window.FB.save(corp, validRows);
+    setStatus('✅ '+validRows.length+tx('saved'), 'ok');
+    document.getElementById('syncInfo').textContent = TX[lang].syncSaved(corp, validRows.length);
     await loadAllAndRender();
   } catch(e){ setStatus(tx('saveErr')+e.message,'err'); } finally { hideOv(); }
 }
@@ -614,8 +677,17 @@ async function loadCorpData(corp){
   try {
     var rows=await window.FB.load(corp);
     document.getElementById('tbody').innerHTML=''; rowCount=0;
-    if (rows.length){ rows.forEach(function(r){ document.getElementById('tbody').appendChild(makeRow(r)); }); setStatus('✅ '+rows.length+tx('loaded'),'ok'); }
+    if (rows.length){
+      rows.forEach(function(r){
+        // key가 없는 레거시 데이터에 key 부여
+        if(!r.key) r.key='r'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
+        document.getElementById('tbody').appendChild(makeRow(r));
+      });
+      setStatus('✅ '+rows.length+tx('loaded'),'ok');
+    }
     else document.getElementById('tbody').appendChild(makeRow(null));
+    // 전체 데이터도 갱신해서 리스트에 반영
+    allCorpData[corp] = rows;
     renderAllList();
   } catch(e){ document.getElementById('tbody').innerHTML=''; rowCount=0; document.getElementById('tbody').appendChild(makeRow(null)); }
   finally { hideOv(); }
@@ -624,6 +696,7 @@ async function loadAllAndRender(){
   showOv(tx('processing'));
   try {
     allCorpData = await window.FB.loadAll();
+    commentData = await window.FB.loadComments();
     var fCorp=document.getElementById('filterCorp');
     fCorp.innerHTML='<option value="all">'+tx('fCorpAll')+'</option>'+
       CORPS.filter(function(c){ return allCorpData[c]&&allCorpData[c].length; }).map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
@@ -636,6 +709,71 @@ document.getElementById('refreshBtn').onclick = loadAllAndRender;
 document.getElementById('filterCorp').onchange     = function(){ renderAllList(); };
 document.getElementById('filterUrg').onchange      = function(){ renderAllList(); };
 document.getElementById('filterInterest').onchange = function(){ renderAllList(); };
+
+/* ===== 댓글 기능 ===== */
+function getComments(key){ return commentData[key] || []; }
+
+async function addComment(key){
+  var myc=mc();
+  if(!myc){ alert(tx('cmtNeedCorp')); return; }
+  var input=document.getElementById('ci_'+key);
+  if(!input) return;
+  var text=input.value.trim();
+  if(!text) return;
+  if(!commentData[key]) commentData[key]=[];
+  commentData[key].push({ author:myc, text:text, ts:new Date().toISOString() });
+  input.value='';
+  try{ await window.FB.saveComments(commentData); } catch(e){ console.error(e); }
+  renderAllList();
+  if(dashOpen) renderDashboard();
+  // 댓글 영역 다시 열기
+  setTimeout(function(){ var sec=document.getElementById('cs_'+key); if(sec) sec.style.display='block'; },50);
+}
+
+async function deleteComment(key, idx){
+  if(!confirm(tx('cmtDeleteConfirm'))) return;
+  if(commentData[key]){ commentData[key].splice(idx,1); if(!commentData[key].length) delete commentData[key]; }
+  try{ await window.FB.saveComments(commentData); } catch(e){ console.error(e); }
+  renderAllList();
+  if(dashOpen) renderDashboard();
+  setTimeout(function(){ var sec=document.getElementById('cs_'+key); if(sec) sec.style.display='block'; },50);
+}
+
+function toggleComments(key){
+  var sec=document.getElementById('cs_'+key);
+  if(sec) sec.style.display=sec.style.display==='none'?'block':'none';
+}
+
+function commentSectionHTML(key){
+  var cmts=getComments(key);
+  var myc=mc();
+  var count=cmts.length;
+  var toggleText=count>0 ? TX[lang].cmtToggle(count) : tx('cmtToggleNone');
+  var listHTML=cmts.map(function(c,i){
+    var initials=c.author.substring(0,3);
+    var canDel=myc&&c.author===myc;
+    var delBtn=canDel?'<button class="comment-delete" onclick="deleteComment(\''+key+'\','+i+')" title="Delete">✕</button>':'';
+    return '<div class="comment-item">'
+      +'<div class="comment-avatar">'+initials+'</div>'
+      +'<div class="comment-bubble">'+delBtn
+      +'<span class="comment-author">'+esc(c.author)+'</span>'
+      +'<span class="comment-time">'+timeAgo(c.ts)+'</span>'
+      +'<div class="comment-text">'+esc(c.text)+'</div>'
+      +'</div></div>';
+  }).join('');
+  var disabled=!myc?'disabled':'';
+  var inputHTML='<div class="comment-input-wrap">'
+    +'<textarea class="comment-input" id="ci_'+key+'" placeholder="'+tx('cmtPh')+'" rows="1" '+disabled
+    +' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addComment(\''+key+'\');}"></textarea>'
+    +'<button class="comment-send" onclick="addComment(\''+key+'\')" '+disabled+'>'+tx('cmtSend')+'</button>'
+    +'</div>';
+  return '<div class="comment-section">'
+    +'<button class="comment-toggle" onclick="toggleComments(\''+key+'\')">'+toggleText+'</button>'
+    +'<div id="cs_'+key+'" style="display:none;">'
+    +'<div class="comment-list">'+listHTML+'</div>'
+    +inputHTML
+    +'</div></div>';
+}
 
 /* ===== 전체 아젠다 리스트 ===== */
 var urgMap = {높음:'high',보통:'mid',낮음:'low',High:'high',Medium:'mid',Low:'low'};
@@ -685,6 +823,7 @@ function cardHTML(r, myc, maxInt){
     +'<div class="interest-bar-wrap"><div class="interest-bar" style="width:'+barPct+'%"></div></div>'
     +'<span class="interest-count">👍 '+corps.length+tx('intCount')+'</span></div>'
     +(corps.length?'<div class="interest-corps">'+corps.join(', ')+'</div>':'')
+    +commentSectionHTML(r.key)
     +'</div>';
 }
 
@@ -697,19 +836,15 @@ async function deleteAgenda(key, corp){
   try {
     var updated = (allCorpData[corp]||[]).filter(function(r){ return r.key !== key; });
     await window.FB.save(corp, updated);
-    // 로컬 데이터 직접 업데이트
     allCorpData[corp] = updated;
-    // 입력 테이블 갱신
     document.getElementById('tbody').innerHTML=''; rowCount=0;
     if (updated.length) updated.forEach(function(r){ document.getElementById('tbody').appendChild(makeRow(r)); });
     else document.getElementById('tbody').appendChild(makeRow(null));
-    // 필터 드롭다운 갱신
     var fCorp = document.getElementById('filterCorp');
     var prevVal = fCorp.value;
     fCorp.innerHTML = '<option value="all">'+tx('fCorpAll')+'</option>'+
       CORPS.filter(function(c){ return allCorpData[c]&&allCorpData[c].length; })
            .map(function(c){ return '<option value="'+c+'"'+(c===prevVal?' selected':'')+'>'+c+'</option>'; }).join('');
-    // 리스트 & 대시보드 갱신
     renderAllList();
     if (dashOpen) renderDashboard();
   } catch(e){ alert('Error: '+e.message); } finally { hideOv(); }
@@ -765,6 +900,7 @@ function copyTable(){
 /* ===== 초기화 ===== */
 async function init(){
   interestData = await window.FB.loadInterests();
+  commentData  = await window.FB.loadComments();
   openGuide(false);
   await loadAllAndRender();
 }
