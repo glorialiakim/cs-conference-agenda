@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Deploy static HTML to Azure Web App - inbody-cs-conference-agenda
+name: Build and deploy ASP.Net Core app to Azure Web App - inbody-cs-conference-agenda
 
 on:
   push:
@@ -10,22 +10,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
     permissions:
-      id-token: write
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CCF1DAA660D74A97918F9E21ED5B839E }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_04EAB2DB49C44B1AA2BC741202202244 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6461BBD8059F48C9AE724B56C325002D }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DE38CA40DFB3401AAA1DA56E00213DDC }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1F15031C90AF4D9F8ECF35DFC80C89E2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7164D112722F4DB6AF5CA942EDAB4DBB }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -34,3 +62,4 @@ jobs:
           app-name: 'inbody-cs-conference-agenda'
           slot-name: 'Production'
           package: .
+          
