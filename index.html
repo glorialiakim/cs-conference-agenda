@@ -312,7 +312,7 @@ function switchTab(name){
   document.getElementById(btns[name]).classList.add('active');
   activeTab=name;
   if(name==='dash'){dashOpen=true;setText('tabDashLabel',tx('tabDashClose'));renderDashboard();}
-  else if(name==='discuss'){renderDiscuss();}
+  else if(name==='discuss'){renderDiscussPanel();}
   else if(name==='schedule'){renderSchedule();}
 }
 /* ===== 입력 테이블 ===== */
