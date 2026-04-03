@@ -217,12 +217,11 @@ textarea{min-height:60px;}select{height:30px;}
 <div id="frontPage" class="page-section active">
 <div class="front-page">
 <div class="top-bar"><div><h2 id="mainTitle">2026 해외CS 오프라인 컨퍼런스 &mdash; 아젠다 제출 양식</h2><div class="subtitle" id="subtitleEl">&#x1F4C5; 컨퍼런스: 2026.05.11(월) ~ 05.12(화) &nbsp;|&nbsp; &#x23F0; 제출 마감: 2026.04.03(금) 18:00 KST</div></div><div style="display:flex;gap:6px;margin-top:4px;align-items:center;"><button class="main-btn btn-guide" id="guideOpenBtn">&#x1F4D6; Guide</button><div class="lang-toggle"><button class="lang-btn active" id="btnKo">KO</button><button class="lang-btn" id="btnEn">EN</button></div></div></div>
-<div class="corp-banner"><div class="corp-banner-label"><div class="pulse"></div><label id="corpLabel">&#x1F4CD; 내 법인 선택</label></div><select id="myCorpSelect"></select><span class="hint" id="corpHint">&#x1F446; 먼저 법인을 선택해야 아젠다를 입력할 수 있습니다</span><span class="sync-info" id="syncInfo"></span></div>
 <div class="front-cards">
 <div class="front-card" onclick="goPage('status')">
 <div class="front-card-icon">&#x1F4CA;</div>
 <div class="front-card-title" id="fcStatusTitle">아젠다 현황 보기</div>
-<div class="front-card-desc" id="fcStatusDesc">전체 등록 아젠다 확인, 대시보드, 관심 표시 및 논의 진행</div>
+<div class="front-card-desc" id="fcStatusDesc">전체 등록 아젠다 확인, 대시보드, 관심 표시</div>
 <div class="front-card-badge" id="fcStatusBadge">-</div>
 </div>
 <div class="front-card" onclick="goPage('write')">
@@ -231,11 +230,17 @@ textarea{min-height:60px;}select{height:30px;}
 <div class="front-card-desc" id="fcWriteDesc">우리 법인의 아젠다를 작성하고 제출합니다</div>
 <div class="front-card-badge" id="fcWriteBadge" style="background:#e67e22;">&#x23F0; 마감 D-day</div>
 </div>
-<div class="front-card" onclick="goPage('schedule')">
+<div class="front-card" onclick="goPage('discuss')">
+<div class="front-card-icon">&#x1F4AC;</div>
+<div class="front-card-title" id="fcDiscussTitle">논의 진행 현황</div>
+<div class="front-card-desc" id="fcDiscussDesc">아젠다별 논의 상태 관리 및 회의 로그 기록</div>
+<div class="front-card-badge" id="fcDiscussBadge" style="background:#8e44ad;">-</div>
+</div>
+<div class="front-card" style="opacity:.5;cursor:not-allowed;pointer-events:none;">
 <div class="front-card-icon">&#x1F4C5;</div>
 <div class="front-card-title" id="fcSchTitle">시간표</div>
 <div class="front-card-desc" id="fcSchDesc">컨퍼런스 2일 일정표 확인 및 편집</div>
-<div class="front-card-badge" style="background:#27ae60;">Day 1~2</div>
+<div class="front-card-badge" style="background:#aaa;">일정 조율중</div>
 </div>
 </div>
 </div>
@@ -244,13 +249,18 @@ textarea{min-height:60px;}select{height:30px;}
 <div id="pageStatus" class="page-section">
 <button class="back-btn" onclick="goPage('home')">&#x2190; 메인으로</button>
 <div class="all-section" style="margin-top:0;"><div class="all-section-header"><span class="all-section-title" id="allListTitle">&#x1F4CB; 전체 등록 아젠다</span><button class="refresh-btn" id="refreshBtn">&#x1F504; <span id="refreshLabel">새로고침</span></button></div><div class="all-filter"><select id="filterCorp"><option value="all" id="fCorpAll">전체 법인</option></select><select id="filterUrg"><option value="all" id="fUrgAll">전체 긴급도</option><option value="high" id="fUrgH">높음</option><option value="mid" id="fUrgM">보통</option><option value="low" id="fUrgL">낮음</option></select><select id="filterInterest"><option value="all" id="fIntAll">전체</option><option value="mine" id="fIntMine">내가 관심 표시한 것만</option></select></div><div id="allListCards"><div class="empty">새로고침을 눌러 전체 아젠다를 불러오세요.</div></div></div>
-<div class="tab-bar"><button class="tab-btn" id="tabDashBtn">&#x1F4CA; <span id="tabDashLabel">대시보드 보기</span></button><button class="tab-btn" id="tabDiscussBtn">&#x1F4AC; 논의 진행</button></div>
+<div class="tab-bar"><button class="tab-btn" id="tabDashBtn">&#x1F4CA; <span id="tabDashLabel">대시보드 보기</span></button></div>
 <div class="tab-panel" id="panelDash"><div class="dash-grid"><div class="stat-card"><div class="stat-num" id="statTotal">-</div><div class="stat-label" id="statTotalLabel">전체 아젠다</div></div><div class="stat-card"><div class="stat-num" id="statCorps">-</div><div class="stat-label" id="statCorpsLabel">참여 법인</div></div><div class="stat-card"><div class="stat-num" id="statHigh">-</div><div class="stat-label" id="statHighLabel">긴급도 높음</div></div><div class="stat-card"><div class="stat-num" id="statInterest">-</div><div class="stat-label" id="statInterestLabel">총 관심 표시</div></div></div><div style="background:#fff;border:1px solid #d0d0d0;border-radius:8px;padding:14px;margin-bottom:16px;"><div class="corp-breakdown-title" id="corpBreakdownTitle">법인별 아젠다 수</div><div id="corpBreakdown"></div></div><div class="corp-breakdown-title" id="topAgendaTitle" style="margin-bottom:8px;">&#x1F3C6; 관심 TOP 아젠다</div><div id="dashTopCards"></div></div>
-<div class="tab-panel" id="panelDiscuss"><div class="discuss-header"><span style="font-size:14px;font-weight:bold;color:#1a3a5c;">&#x1F4AC; 논의 진행 현황</span><div class="discuss-filter"><select id="discussFilterCorp"><option value="all">전체 법인</option></select><select id="discussFilterStatus"><option value="all">전체 상태</option><option value="pending">미시작</option><option value="ongoing">진행중</option><option value="done">완료</option><option value="deferred">보류</option></select><button class="refresh-btn" id="discussRefreshBtn">&#x1F504; 새로고침</button></div></div><div id="discussCards"><div class="discuss-empty">새로고침을 눌러 아젠다를 불러오세요.</div></div></div>
+</div>
+<!-- ===== DISCUSS PAGE ===== -->
+<div id="pageDiscuss" class="page-section">
+<button class="back-btn" onclick="goPage('home')">&#x2190; 메인으로</button>
+<div class="discuss-header"><span style="font-size:14px;font-weight:bold;color:#1a3a5c;">&#x1F4AC; 논의 진행 현황</span><div class="discuss-filter"><select id="discussFilterCorp"><option value="all">전체 법인</option></select><select id="discussFilterStatus"><option value="all">전체 상태</option><option value="pending">미시작</option><option value="ongoing">진행중</option><option value="done">완료</option><option value="deferred">보류</option></select><button class="refresh-btn" id="discussRefreshBtn">&#x1F504; 새로고침</button></div></div><div id="discussCards"><div class="discuss-empty">새로고침을 눌러 아젠다를 불러오세요.</div></div>
 </div>
 <!-- ===== WRITE PAGE ===== -->
 <div id="pageWrite" class="page-section">
 <button class="back-btn" onclick="goPage('home')">&#x2190; 메인으로</button>
+<div class="corp-banner"><div class="corp-banner-label"><div class="pulse"></div><label id="corpLabel2">&#x1F4CD; 내 법인 선택</label></div><select id="myCorpSelect"></select><span class="hint" id="corpHint2">&#x1F446; 먼저 법인을 선택해야 아젠다를 입력할 수 있습니다</span><span class="sync-info" id="syncInfo"></span></div>
 <div class="corp-warn" id="corpWarning"></div>
 <div class="notice" id="noticeEl">&#x203B; 이틀 일정인 만큼 법인당 <strong>핵심 아젠다 위주</strong>로 작성해 주세요.<br>&#x203B; 타부서 참여가 필요한 경우 관련 부서를 반드시 명시해 주세요.</div>
 <table><thead><tr><th>No</th><th id="th-corp" style="width:75px">법인</th><th id="th-cat" style="width:90px">구분</th><th id="th-title" style="width:148px">아젠다 제목</th><th id="th-content">논의하고 싶은 내용 &amp; 논의 필요 이유<br><span id="th-content-sub" style="font-weight:normal;font-size:11px">(현황, 논의 포인트, 필요 이유 함께 작성)</span></th><th id="th-dept" style="width:130px">관련 부서</th><th id="th-urg" style="width:72px">긴급도</th><th style="width:34px"></th></tr></thead><tbody id="tbody"><tr><td colspan="8" class="loading">법인을 먼저 선택해주세요.</td></tr></tbody></table>
@@ -370,11 +380,11 @@ function updateDeptTags(n){var menu=document.getElementById('dm'+n),sel=[];menu.
 function getDepts(n){var menu=document.getElementById('dm'+n);if(!menu)return[];var sel=[];menu.querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){if(cb.value==='__other__'){var v=document.getElementById('do'+n).value.trim();if(v)sel.push(v);}else sel.push(cb.value);});return sel;}
 /* ===== 탭 ===== */
 document.getElementById('tabDashBtn').onclick=function(){switchTab('dash');};
-document.getElementById('tabDiscussBtn').onclick=function(){switchTab('discuss');};
+var discTabBtn=document.getElementById('tabDiscussBtn');if(discTabBtn)discTabBtn.onclick=function(){switchTab('discuss');};
 var schTabBtn=document.getElementById('tabScheduleBtn');if(schTabBtn)schTabBtn.onclick=function(){switchTab('schedule');};
 function switchTab(name){
-  var panels={dash:'panelDash',discuss:'panelDiscuss'};
-  var btns={dash:'tabDashBtn',discuss:'tabDiscussBtn'};
+  var panels={dash:'panelDash'};
+  var btns={dash:'tabDashBtn'};
   if(activeTab===name){
     document.getElementById(panels[name]).classList.remove('active');
     document.getElementById(btns[name]).classList.remove('active');
@@ -444,8 +454,9 @@ document.getElementById('schSaveBtn').onclick=async function(){var now=new Date(
 function goPage(name){
   document.querySelectorAll('.page-section').forEach(function(el){el.classList.remove('active');});
   if(name==='home'){document.getElementById('frontPage').classList.add('active');updateFrontBadges();window.scrollTo(0,0);return;}
-  if(name==='status'){document.getElementById('pageStatus').classList.add('active');renderAllList();if(activeTab==='dash')renderDashboard();if(activeTab==='discuss')renderDiscussPanel();}
+  if(name==='status'){document.getElementById('pageStatus').classList.add('active');renderAllList();if(activeTab==='dash')renderDashboard();}
   if(name==='write'){document.getElementById('pageWrite').classList.add('active');if(mc()&&!document.querySelectorAll('#tbody tr[id]').length)loadCorpData(mc());}
+  if(name==='discuss'){document.getElementById('pageDiscuss').classList.add('active');renderDiscussPanel();}
   if(name==='schedule'){document.getElementById('pageSchedule').classList.add('active');renderSchedule();}
   window.scrollTo(0,0);
 }
@@ -455,6 +466,7 @@ function updateFrontBadges(){
   var myc=mc(),myCnt=(allCorpData[myc]||[]).length;
   var wb=document.getElementById('fcWriteBadge');
   if(wb){if(myc&&myCnt>0)wb.textContent=myc+': '+myCnt+(lang==='ko'?'개 등록':' submitted');else wb.textContent=lang==='ko'?'작성 필요':'Write now';}
+  var db=document.getElementById('fcDiscussBadge');if(db)db.textContent=total>0?(total+(lang==='ko'?'개 아젠다':' agendas')):'-';
 }
 window.addEventListener('firebaseReady',function(){init().then(updateFrontBadges);});
 </script>
